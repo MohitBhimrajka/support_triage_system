@@ -19,8 +19,8 @@ class TicketState(BaseModel):
     Represents the complete state and context of a single support ticket.
     This schema is the single source of truth for a ticket's journey.
     """
-    ticket_id: str = Field(
-        ..., # The '...' makes this field required
+    ticket_id: Optional[str] = Field(
+        default=None,
         description="The unique identifier for the support ticket."
     )
     

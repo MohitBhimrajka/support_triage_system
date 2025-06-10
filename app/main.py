@@ -1,7 +1,7 @@
 import asyncio
 import os
 import vertexai
-from google.adk.runners import Runner, EventType
+from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.adk.agents import Agent
 from app.agents.router import create_router_agent
@@ -9,6 +9,9 @@ from app.schemas.ticket_state import TicketState
 from vertexai.generative_models import Content, Part
 
 async def run_test(agent: Agent):
+    """
+    Runs a single test case against the provided agent.
+    """
     print("==========================================================")
     print("🚀 STARTING LOCAL AGENT TEST RUN...")
     print("==========================================================")
@@ -34,23 +37,28 @@ async def run_test(agent: Agent):
 
     print("\n------------------ AGENT IS THINKING -------------------\n")
     
-    final_message = "Agent did not produce a final message."
-    final_state = None
-
+    # --- This is the corrected, simpler loop ---
+    # The runner yields events. We'll just capture the very last one,
+    # which contains the final state of the conversation.
+    final_event = None
     for event in runner.run(
         user_id=user_id,
         session_id=session.id,
         new_message=user_message_content
     ):
-        print(f"🔄 Event: {event.type}")
-        if event.type == EventType.TOOL_END:
-            # The state is updated after a tool finishes running.
-            final_state = event.data.get("session", {}).get("state")
-        elif event.type == EventType.AGENT_END:
-            # The final human-readable message is in the AGENT_END event.
-            final_message = event.data.get("message")
+        print(f"🔄 Agent event processed...")
+        final_event = event
 
     print("\n----------------- AGENT EXECUTION ENDED ----------------\n")
+    
+    if not final_event:
+        print("❌ ERROR: The agent did not produce any output.")
+        return
+
+    # Extract the final message and state safely from the last event.
+    final_message = getattr(final_event, 'message', "Agent did not produce a final message.")
+    final_state = getattr(final_event.session, 'state', None)
+
     print(f"✅ FINAL AGENT RESPONSE (for user):\n{final_message}")
     
     print("\n🔍 FINAL SESSION STATE:")

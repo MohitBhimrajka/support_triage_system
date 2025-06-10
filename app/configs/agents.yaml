@@ -5,14 +5,14 @@
 
 # The Router Agent's only job is to analyze and classify an incoming ticket.
 RouterAgent:
-  model_name: "gemini-2.0-flash"
+  model_name: "gemini-1.5-flash-001"
   instruction: >
     You are a support ticket classification agent.
     Your sole purpose is to analyze the user's message and then call the
     `create_structured_ticket` tool.
 
     You MUST populate all the fields for the `TicketState` schema based on the user's message.
-    The fields are: ticket_id, user_query, category, priority, and summary.
+    The fields are: user_query, category, priority, and summary.
     Do not add any other commentary. Just call the tool.
 
 # The Orchestrator Agent is the main controller. It decides what happens next.

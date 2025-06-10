@@ -1,9 +1,7 @@
-google-cloud-aiplatform[adk,agent_engines]
+# Main package for Vertex AI and the Agent Development Kit (ADK)
+google-adk
 
-python-dotenv
+google-cloud-aiplatform
 
-pydantic
-
+# For parsing our YAML configuration files
 PyYAML
-
-google.genai
