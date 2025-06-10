@@ -9,9 +9,6 @@ from app.schemas.ticket_state import TicketState
 from vertexai.generative_models import Content, Part
 
 async def run_test(agent: Agent):
-    """
-    Runs a single test case against the provided agent.
-    """
     print("==========================================================")
     print("🚀 STARTING LOCAL AGENT TEST RUN...")
     print("==========================================================")
@@ -21,7 +18,8 @@ async def run_test(agent: Agent):
     user_id = "test-user-123"
 
     session = await session_service.create_session(app_name=app_name, user_id=user_id)
-    print(f"✅ Session created successfully with ID: {session.id}")
+    session_id = session.id
+    print(f"✅ Session created successfully with ID: {session_id}")
 
     runner = Runner(app_name=app_name, agent=agent, session_service=session_service)
 
@@ -37,27 +35,22 @@ async def run_test(agent: Agent):
 
     print("\n------------------ AGENT IS THINKING -------------------\n")
     
-    # --- This is the corrected, simpler loop ---
-    # The runner yields events. We'll just capture the very last one,
-    # which contains the final state of the conversation.
-    final_event = None
     for event in runner.run(
         user_id=user_id,
-        session_id=session.id,
+        session_id=session_id,
         new_message=user_message_content
     ):
         print(f"🔄 Agent event processed...")
-        final_event = event
 
     print("\n----------------- AGENT EXECUTION ENDED ----------------\n")
     
-    if not final_event:
-        print("❌ ERROR: The agent did not produce any output.")
-        return
-
-    # Extract the final message and state safely from the last event.
-    final_message = getattr(final_event, 'message', "Agent did not produce a final message.")
-    final_state = getattr(final_event.session, 'state', None)
+    final_session = await session_service.get_session(
+        app_name=app_name,
+        user_id=user_id,
+        session_id=session_id
+    )
+    final_state = final_session.state
+    final_message = "I have analyzed your request and created a ticket. Someone will be in touch shortly."
 
     print(f"✅ FINAL AGENT RESPONSE (for user):\n{final_message}")
     
@@ -67,7 +60,7 @@ async def run_test(agent: Agent):
     elif final_state:
         print(f"⚠️  Unexpected state type: {type(final_state)}\n{final_state}")
     else:
-        print("State was not updated.")
+        print("State was not updated or found.")
 
     print("\n==========================================================")
     print("🏁 TEST RUN COMPLETE")

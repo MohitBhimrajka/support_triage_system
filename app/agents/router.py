@@ -1,6 +1,6 @@
 from google.adk.agents import Agent
 # --- Import the new tool ---
-from app.tools.triage_tools import create_structured_ticket_tool
+from app.tools.triage_tools import analyze_and_create_ticket_tool
 from app.configs.loader import load_agent_configs
 
 def create_router_agent() -> Agent:
@@ -16,7 +16,7 @@ def create_router_agent() -> Agent:
         model=router_config["model_name"],
         instruction=router_config["instruction"],
         # --- Use the new, simpler tool ---
-        tools=[create_structured_ticket_tool],
+        tools=[analyze_and_create_ticket_tool],
     )
     
     print("✅ RouterAgent instance created successfully.")
